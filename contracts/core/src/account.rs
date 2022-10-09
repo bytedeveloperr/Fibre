@@ -1,7 +1,6 @@
-use std::collections::HashMap;
-
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::{env, AccountId};
+use std::collections::HashMap;
 
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct Account {
@@ -14,7 +13,7 @@ impl Account {
         assert!(env::is_valid_account_id(account_id.as_bytes()));
 
         Self {
-            account_id: account_id.into(),
+            account_id,
             tokens: HashMap::new(),
         }
     }
