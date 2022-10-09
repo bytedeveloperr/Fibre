@@ -8,8 +8,8 @@ use crate::token::Token;
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct Fibre {
-    accounts: LookupMap<AccountId, Account>,
-    tokens: LookupMap<AccountId, Token>,
+    pub accounts: LookupMap<AccountId, Account>,
+    pub tokens: LookupMap<AccountId, Token>,
 }
 
 impl Default for Fibre {
