@@ -1,5 +1,5 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::{env, near_bindgen, AccountId};
+use near_sdk::{env, near_bindgen, AccountId, Balance};
 use std::collections::HashMap;
 
 use crate::fibre::{Fibre, FibreExt};
@@ -7,7 +7,7 @@ use crate::fibre::{Fibre, FibreExt};
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct Account {
     account_id: AccountId,
-    tokens: HashMap<AccountId, AccountId>,
+    tokens: HashMap<AccountId, Balance>,
 }
 
 impl Account {
@@ -17,6 +17,30 @@ impl Account {
         Self {
             account_id,
             tokens: HashMap::new(),
+        }
+    }
+
+    pub fn get_balance(&self, token_id: AccountId) -> Balance {
+        *self.tokens.get(&token_id).unwrap_or(&0)
+    }
+
+    pub fn deposit(&mut self, token_id: AccountId, amount: Balance) {
+        let balance = self.get_balance(token_id.clone());
+
+        if let Some(new_balance) = balance.checked_add(amount) {
+            self.tokens.insert(token_id, new_balance);
+        } else {
+            env::panic_str("Error: Deposit overflow")
+        }
+    }
+
+    pub fn withdraw(&mut self, token_id: AccountId, amount: Balance) {
+        let balance = self.get_balance(token_id.clone());
+
+        if let Some(new_balance) = balance.checked_sub(amount) {
+            self.tokens.insert(token_id, new_balance);
+        } else {
+            env::panic_str("Error: Insuffficient deposit balance")
         }
     }
 }
