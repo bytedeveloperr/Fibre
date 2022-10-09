@@ -409,7 +409,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "fibre_core"
+name = "fibre_fungible_token"
 version = "1.0.0"
 dependencies = [
  "near-contract-standards",
