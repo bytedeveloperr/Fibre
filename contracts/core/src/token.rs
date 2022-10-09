@@ -68,8 +68,6 @@ impl Token {
     }
 
     pub fn mint(&mut self, account_id: AccountId, amount: Balance) {
-        // TODO: Mint fToken to accounts
-
         self.internal_increment_shares(account_id, amount)
     }
 }
