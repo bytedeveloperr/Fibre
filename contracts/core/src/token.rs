@@ -4,7 +4,7 @@ use crate::fibre::{Fibre, FibreExt};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::json_types::U128;
 use near_sdk::serde::{Deserialize, Serialize};
-use near_sdk::{env, ext_contract, near_bindgen, AccountId, Balance, PromiseOrValue};
+use near_sdk::{env, ext_contract, near_bindgen, AccountId, Balance, Promise, PromiseOrValue};
 
 #[ext_contract(ext_fungible_token)]
 pub trait FungibleToken {
@@ -73,10 +73,15 @@ impl Token {
 }
 
 impl Fibre {
-    pub fn internal_ft_mint(&self, token_id: AccountId, account_id: AccountId, amount: U128) {
+    pub fn internal_ft_mint(
+        &self,
+        token_id: AccountId,
+        account_id: AccountId,
+        amount: U128,
+    ) -> Promise {
         ext_fibre_fungible_token::ext(token_id)
             .with_static_gas(100_000_000_000.into())
-            .ft_mint(account_id, amount);
+            .ft_mint(account_id, amount)
     }
 }
 
@@ -90,16 +95,33 @@ impl Fibre {
 
     pub fn mint_token(&mut self, input: MintTokenInput) {
         let minter_id = env::predecessor_account_id();
-        let mut token = self.get_token(input.mint_token_id.clone());
 
-        let mut account = self.internal_get_account(minter_id.clone());
-
-        account.deposit(input.mint_token_id.clone(), 100);
-        self.internal_ft_mint(
+        let mint = self.internal_ft_mint(
             input.mint_token_id.clone(),
             minter_id.clone(),
             input.collateral_amount.clone(),
         );
-        token.mint(minter_id.clone(), input.collateral_amount.into());
+
+        mint.then(
+            Self::ext(env::current_account_id())
+                .with_static_gas(100_000_000.into())
+                .on_mint_token(minter_id, input.mint_token_id),
+        );
+    }
+
+    pub fn on_mint_token(
+        &mut self,
+        #[callback_result] call_result: Result<String, Promise>,
+        account_id: AccountId,
+        token_id: AccountId,
+    ) {
+        if call_result.is_err() {
+            env::panic_str("Error")
+        }
+
+        let mut account = self.internal_get_account(account_id.clone().clone());
+        let mut token = self.get_token(token_id.clone());
+        account.deposit(token_id.clone(), 100);
+        token.mint(account_id.clone(), 0);
     }
 }
