@@ -1,4 +1,4 @@
 pub mod account;
-pub mod collateral;
 pub mod fibre;
+pub mod misc;
 pub mod token;

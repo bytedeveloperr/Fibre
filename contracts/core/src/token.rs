@@ -1,10 +1,10 @@
-use std::collections::HashMap;
-
 use crate::fibre::{Fibre, FibreExt};
+use crate::misc::TokenId;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::json_types::U128;
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{env, ext_contract, near_bindgen, AccountId, Balance, Promise, PromiseOrValue};
+use std::collections::HashMap;
 
 #[ext_contract(ext_fungible_token)]
 pub trait FungibleToken {
@@ -41,7 +41,7 @@ pub struct Token {
 #[serde(crate = "near_sdk::serde")]
 pub struct MintTokenInput {
     collateral_amount: U128,
-    mint_token_id: AccountId,
+    mint_token_id: TokenId,
     collateral_token_id: AccountId,
 }
 
@@ -75,7 +75,7 @@ impl Token {
 impl Fibre {
     pub fn internal_ft_mint(
         &self,
-        token_id: AccountId,
+        token_id: TokenId,
         account_id: AccountId,
         amount: U128,
     ) -> Promise {
@@ -87,7 +87,7 @@ impl Fibre {
 
 #[near_bindgen]
 impl Fibre {
-    pub fn get_token(&self, token_id: AccountId) -> Token {
+    pub fn get_token(&self, token_id: TokenId) -> Token {
         self.tokens.get(&token_id).unwrap_or_else(|| {
             env::panic_str(format!("Error: The token {} was not found", token_id).as_str())
         })
@@ -113,7 +113,7 @@ impl Fibre {
         &mut self,
         #[callback_result] call_result: Result<String, Promise>,
         account_id: AccountId,
-        token_id: AccountId,
+        token_id: TokenId,
     ) {
         if call_result.is_err() {
             env::panic_str("Error")

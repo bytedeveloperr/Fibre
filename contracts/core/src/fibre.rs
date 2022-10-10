@@ -3,13 +3,14 @@ use near_sdk::collections::LookupMap;
 use near_sdk::{env, near_bindgen, AccountId};
 
 use crate::account::Account;
+use crate::misc::TokenId;
 use crate::token::Token;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct Fibre {
     pub accounts: LookupMap<AccountId, Account>,
-    pub tokens: LookupMap<AccountId, Token>,
+    pub tokens: LookupMap<TokenId, Token>,
 }
 
 impl Default for Fibre {
